@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search Lost Items</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">
+      <img
+        src="https://img.icons8.com/ios-filled/50/000000/airport.png"
+        alt="logo"
+      />
+      <div>
+        <div class="logo-text">Airport Lost & Found</div>
+        <div class="subtext">Secure Item Tracking</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+      <a href="Search_items.html" class="nav-link active">Search Items</a>
+      <a href="Report_items.html" class="nav-link"
+        ><i class="fas fa-plus"></i> Report Found</a
+      >
+      <a href="about.html" class="nav-link">About</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Search Lost Items</h1>
+    <p class="subtitle">
+      Find your lost belongings using our secure hash-based tracking system
+    </p>
+
+    <div class="search-box">
+      <h2>
+        <span class="icon"><i class="fas fa-search"></i></span> Search Filters
+      </h2>
+      <p class="desc">
+        Search by description, item hash ID, or use filters to narrow down
+        results
+      </p>
+
+      <form class="form-group" onsubmit="searchItems(event)">
+        <div class="input-group">
+          <label for="searchDescription">Search Term</label>
+          <input
+            type="text"
+            id="searchDescription"
+            placeholder="Enter description, hash ID, or keywords..."
+          />
+        </div>
+        <div class="input-group">
+          <label for="category">Category</label>
+          <select id="category">
+            <option>All categories</option>
+            <option>Electronics</option>
+            <option>Clothing</option>
+            <option>Documents</option>
+            <option>Accessories</option>
+          </select>
+        </div>
+        <button type="submit" class="search-btn">
+          <i class="fas fa-search"></i> Search Items
+        </button>
+      </form>
+    </div>
+
+    <div id="results" class="results"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-top">
+      <i class="fas fa-hashtag footer-icon"></i>
+      <h2>Airport Lost & Found</h2>
+      <p>Secure hash-based tracking for airport lost and found items</p>
+    </div>
+    <hr />
+    <div class="footer-bottom">
+      <span>&copy; 2024 Airport Lost & Found System</span>
+      <span>•</span>
+      <span>Powered by Advanced Hashing Technology</span>
+    </div>
+  </footer>
+
+  <script>
+    async function displayResults(data) {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "";
+
+      if (data.results.length === 0) {
+        resultsDiv.innerHTML = "<p>No items found.</p>";
+      } else {
+        const foundCount = document.createElement("h3");
+        foundCount.textContent = `Found ${data.results.length} items`;
+        resultsDiv.appendChild(foundCount);
+
+        data.results.forEach((item) => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "result-item";
+
+          const statusClass = item.isLost ? "lost" : "found";
+          const statusText = item.isLost ? "Lost" : "Found";
+
+          itemDiv.innerHTML = `
+            <div class="result-header">
+              <h4>${item.description}</h4>
+              <span class="status ${statusClass}">${statusText}</span>
+            </div>
+            <div class="result-details">
+              <p><strong>ID:</strong> ${item.id}</p>
+              <p><strong>Location:</strong> ${item.location}</p>
+              <p><strong>Date:</strong> ${item.date}</p>
+              <p><strong>Reported By:</strong> ${item.reportedBy || "N/A"}</p>
+              <p><strong>Contact:</strong> ${item.contactInfo || "N/A"}</p>
+              <p><strong>Tags:</strong> ${item.tags || "None"}</p>
+              <p><strong>Notes:</strong> ${item.notes || "None"}</p>
+            </div>
+            <button class="claim-btn">View Details & Claim</button>
+          `;
+
+          resultsDiv.appendChild(itemDiv);
+        });
+      }
+    }
+
+    async function searchItems(event) {
+      event.preventDefault();
+      const searchTerm = document.getElementById("searchDescription").value;
+      const category = document.getElementById("category").value;
+
+      let body;
+      if (!searchTerm) {
+        body = {}; // Return all items if no search term
+      } else {
+        // Check if searchTerm is a number (for ID search)
+        const isId = !isNaN(searchTerm) && !isNaN(parseFloat(searchTerm));
+        body = isId ? { id: parseInt(searchTerm) } : { description: searchTerm };
+      }
+
+      const response = await fetch("/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        displayResults(data);
+      } else {
+        alert("Error searching items.");
+      }
+    }
+
+    async function loadAllItems() {
+      const response = await fetch("/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        displayResults(data);
+      }
+    }
+
+
+  </script>
+</body>
+</html>
