@@ -94,58 +94,56 @@
         <button type="submit" class="submit-btn">➕ Report Item</button>
       </form>
       <script>
-        const BACKEND_URL = "airport-lost-found-backend-production.up.railway.app";
+const BACKEND_URL = "airport-lost-found-backend-production.up.railway.app";
 
-  async function submitReport(event) {
-    event.preventDefault();
+async function submitReport(event) {
+  event.preventDefault();
 
-    const description = document.getElementById('description').value;
-    const category = document.getElementById('category').value;
-    const location = document.getElementById('location').value;
-    const date = document.getElementById('date').value;
-    const time = document.getElementById('time').value;
-    const reportedBy = document.getElementById('reportedBy').value;
-    const contactInfo = document.getElementById('contactInfo').value;
-    const tags = document.getElementById('tags').value;
-    const notes = document.getElementById('notes').value;
+  const description = document.getElementById('description').value;
+  const category = document.getElementById('category').value;
+  const location = document.getElementById('location').value;
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
 
-    if (!description || !category || !location || !date || !time || !reportedBy || !contactInfo) {
-      alert('Please fill in all required fields.');
-      return;
-    }
-
-    // Generate simple unique ID
-    const id = Date.now() % 100000 + description.length;
-
-    const body = {
-      id: id,
-      description: description,
-      location: location,
-      date: date + ' ' + time,
-      isLost: category.toLowerCase() === "lost"
-    };
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (response.ok) {
-        alert('Item reported successfully!');
-        document.getElementById('reportForm').reset();
-      } else {
-        alert('Error reporting item.');
-      }
-    } catch (err) {
-      alert('Backend not reachable.');
-      console.error(err);
-    }
+  if (!description || !category || !location || !date || !time) {
+    alert('Please fill in all required fields.');
+    return;
   }
-      </script>
+
+  const id = Date.now() % 100000 + description.length;
+
+  // ✅ SEND ONLY BACKEND-EXPECTED FIELDS
+  const body = {
+    id: id,
+    description: description,
+    location: location,
+    date: date + ' ' + time,
+    isLost: category.toLowerCase() === "lost"
+  };
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (response.ok) {
+      alert("Item reported successfully!");
+      document.getElementById("reportForm").reset();
+    } else {
+      alert("Error reporting item.");
+    }
+  } catch (err) {
+    alert("Backend not reachable.");
+    console.error(err);
+  }
+}
+</script>
+
+
     </div>
   </div>
 
@@ -165,4 +163,5 @@
 </footer>
 </body>
 </html>
+
 
