@@ -142,6 +142,17 @@
     <span>Powered by Advanced Hashing Technology</span>
   </div>
 </footer>
+<script>
+const BACKEND_URL = "airport-lost-found-backend-production.up.railway.app";
+
+async function loadItems() {
+  const res = await fetch(`${BACKEND_URL}/items`);
+  const data = await res.json();
+  document.getElementById("items").innerText =
+    JSON.stringify(data, null, 2);
+}
+</script>
 
 </body>
 </html>
+
