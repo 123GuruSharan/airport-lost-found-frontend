@@ -94,53 +94,57 @@
         <button type="submit" class="submit-btn">➕ Report Item</button>
       </form>
       <script>
-        async function submitReport(event) {
-          event.preventDefault();
-          const description = document.getElementById('description').value;
-          const category = document.getElementById('category').value;
-          const location = document.getElementById('location').value;
-          const date = document.getElementById('date').value;
-          const time = document.getElementById('time').value;
-          const reportedBy = document.getElementById('reportedBy').value;
-          const contactInfo = document.getElementById('contactInfo').value;
-          const tags = document.getElementById('tags').value;
-          const notes = document.getElementById('notes').value;
+        const BACKEND_URL = "airport-lost-found-backend-production.up.railway.app";
 
-          if (!description || !category || !location || !date || !time || !reportedBy || !contactInfo) {
-            alert('Please fill in all required fields.');
-            return;
-          }
+  async function submitReport(event) {
+    event.preventDefault();
 
-          // Generate a simple hash ID based on current timestamp and description length
-          const id = Date.now() % 100000 + description.length;
+    const description = document.getElementById('description').value;
+    const category = document.getElementById('category').value;
+    const location = document.getElementById('location').value;
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const reportedBy = document.getElementById('reportedBy').value;
+    const contactInfo = document.getElementById('contactInfo').value;
+    const tags = document.getElementById('tags').value;
+    const notes = document.getElementById('notes').value;
 
-        const body = {
-            id: id,
-            description: description,
-            location: location,
-            date: date + ' ' + time,
-            isLost: false,
-            reportedBy: reportedBy,
-            contactInfo: contactInfo,
-            tags: tags,
-            notes: notes
-        };
+    if (!description || !category || !location || !date || !time || !reportedBy || !contactInfo) {
+      alert('Please fill in all required fields.');
+      return;
+    }
 
-          const response = await fetch('/report', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-          });
+    // Generate simple unique ID
+    const id = Date.now() % 100000 + description.length;
 
-          if (response.ok) {
-            alert('Item reported successfully!');
-            document.getElementById('reportForm').reset();
-          } else {
-            alert('Error reporting item.');
-          }
-        }
+    const body = {
+      id: id,
+      description: description,
+      location: location,
+      date: date + ' ' + time,
+      isLost: category.toLowerCase() === "lost"
+    };
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        alert('Item reported successfully!');
+        document.getElementById('reportForm').reset();
+      } else {
+        alert('Error reporting item.');
+      }
+    } catch (err) {
+      alert('Backend not reachable.');
+      console.error(err);
+    }
+  }
       </script>
     </div>
   </div>
@@ -161,3 +165,4 @@
 </footer>
 </body>
 </html>
+
