@@ -89,93 +89,73 @@
     </div>
   </footer>
 
-  <script>
-    async function displayResults(data) {
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "";
 
-      if (data.results.length === 0) {
-        resultsDiv.innerHTML = "<p>No items found.</p>";
-      } else {
-        const foundCount = document.createElement("h3");
-        foundCount.textContent = `Found ${data.results.length} items`;
-        resultsDiv.appendChild(foundCount);
+<script>
+const BACKEND_URL = "airport-lost-found-backend-production.up.railway.app";
 
-        data.results.forEach((item) => {
-          const itemDiv = document.createElement("div");
-          itemDiv.className = "result-item";
+async function displayResults(data) {
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "";
 
-          const statusClass = item.isLost ? "lost" : "found";
-          const statusText = item.isLost ? "Lost" : "Found";
+  if (data.results.length === 0) {
+    resultsDiv.innerHTML = "<p>No items found.</p>";
+  } else {
+    const foundCount = document.createElement("h3");
+    foundCount.textContent = `Found ${data.results.length} items`;
+    resultsDiv.appendChild(foundCount);
 
-          itemDiv.innerHTML = `
-            <div class="result-header">
-              <h4>${item.description}</h4>
-              <span class="status ${statusClass}">${statusText}</span>
-            </div>
-            <div class="result-details">
-              <p><strong>ID:</strong> ${item.id}</p>
-              <p><strong>Location:</strong> ${item.location}</p>
-              <p><strong>Date:</strong> ${item.date}</p>
-              <p><strong>Reported By:</strong> ${item.reportedBy || "N/A"}</p>
-              <p><strong>Contact:</strong> ${item.contactInfo || "N/A"}</p>
-              <p><strong>Tags:</strong> ${item.tags || "None"}</p>
-              <p><strong>Notes:</strong> ${item.notes || "None"}</p>
-            </div>
-            <button class="claim-btn">View Details & Claim</button>
-          `;
+    data.results.forEach((item) => {
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "result-item";
 
-          resultsDiv.appendChild(itemDiv);
-        });
-      }
-    }
+      const statusClass = item.isLost ? "lost" : "found";
+      const statusText = item.isLost ? "Lost" : "Found";
 
-    async function searchItems(event) {
-      event.preventDefault();
-      const searchTerm = document.getElementById("searchDescription").value;
-      const category = document.getElementById("category").value;
+      itemDiv.innerHTML = `
+        <div class="result-header">
+          <h4>${item.description}</h4>
+          <span class="status ${statusClass}">${statusText}</span>
+        </div>
+        <div class="result-details">
+          <p><strong>ID:</strong> ${item.id}</p>
+          <p><strong>Location:</strong> ${item.location}</p>
+          <p><strong>Date:</strong> ${item.date}</p>
+        </div>
+        <button class="claim-btn">View Details & Claim</button>
+      `;
 
-      let body;
-      if (!searchTerm) {
-        body = {}; // Return all items if no search term
-      } else {
-        // Check if searchTerm is a number (for ID search)
-        const isId = !isNaN(searchTerm) && !isNaN(parseFloat(searchTerm));
-        body = isId ? { id: parseInt(searchTerm) } : { description: searchTerm };
-      }
+      resultsDiv.appendChild(itemDiv);
+    });
+  }
+}
 
-      const response = await fetch("/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+async function searchItems(event) {
+  event.preventDefault();
 
-      if (response.ok) {
-        const data = await response.json();
-        displayResults(data);
-      } else {
-        alert("Error searching items.");
-      }
-    }
+  const searchTerm = document.getElementById("searchDescription").value;
+  if (!searchTerm) {
+    loadAllItems();
+    return;
+  }
 
-    async function loadAllItems() {
-      const response = await fetch("/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-      });
+  const response = await fetch(`${BACKEND_URL}/search/${searchTerm}`);
+  if (response.ok) {
+    const data = await response.json();
+    displayResults({ results: Object.values(data) });
+  } else {
+    alert("Error searching items.");
+  }
+}
 
-      if (response.ok) {
-        const data = await response.json();
-        displayResults(data);
-      }
-    }
+async function loadAllItems() {
+  const response = await fetch(`${BACKEND_URL}/items`);
+  if (response.ok) {
+    const data = await response.json();
+    displayResults({ results: Object.values(data) });
+  }
+}
+</script>
 
-
-  </script>
 </body>
 </html>
+
