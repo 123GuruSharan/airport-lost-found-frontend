@@ -93,55 +93,45 @@
         <p class="note">ℹ️ Please fill in all required fields to generate a hash ID</p>
         <button type="submit" class="submit-btn">➕ Report Item</button>
       </form>
-      <script>
-const BACKEND_URL = "airport-lost-found-backend-production.up.railway.app";
+<script>
+const BACKEND_URL = "https://airport-lost-found-backend-production.up.railway.app";
 
 async function submitReport(event) {
   event.preventDefault();
 
-  const description = document.getElementById('description').value;
-  const category = document.getElementById('category').value;
-  const location = document.getElementById('location').value;
-  const date = document.getElementById('date').value;
-  const time = document.getElementById('time').value;
-
-  if (!description || !category || !location || !date || !time) {
-    alert('Please fill in all required fields.');
-    return;
-  }
-
-  const id = Date.now() % 100000 + description.length;
-
-  // ✅ SEND ONLY BACKEND-EXPECTED FIELDS
   const body = {
-    id: id,
-    description: description,
-    location: location,
-    date: date + ' ' + time,
-    isLost: category.toLowerCase() === "lost"
+    id: Date.now() % 100000,
+    description: document.getElementById('description').value,
+    location: document.getElementById('location').value,
+    date: document.getElementById('date').value + ' ' +
+          document.getElementById('time').value,
+    isLost: false
   };
 
   try {
     const response = await fetch(`${BACKEND_URL}/add`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(body)
     });
 
-    if (response.ok) {
-      alert("Item reported successfully!");
-      document.getElementById("reportForm").reset();
-    } else {
-      alert("Error reporting item.");
+    if (!response.ok) {
+      const errText = await response.text();
+      alert("Backend error: " + errText);
+      return;
     }
-  } catch (err) {
-    alert("Backend not reachable.");
-    console.error(err);
+
+    alert("Item reported successfully!");
+    document.getElementById("reportForm").reset();
+
+  } catch (error) {
+    alert("Network error: " + error.message);
   }
 }
 </script>
+
 
 
     </div>
@@ -163,5 +153,6 @@ async function submitReport(event) {
 </footer>
 </body>
 </html>
+
 
 
